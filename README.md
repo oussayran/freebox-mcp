@@ -24,7 +24,8 @@ Les autres touches, la sélection des chaînes et les autres systèmes d’explo
 ### Matériel et réseau
 
 - Un **Freebox Révolution Player**, le boîtier relié à la TV. Le Freebox Server est un autre appareil.
-- Un Mac et un Player sur un réseau local où ils peuvent communiquer. Le Wi-Fi invité, l’isolation des appareils ou certains VPN peuvent empêcher cette communication.
+- **Le PC/Mac ou le mobile qui envoie les commandes et la Freebox doivent être sur le même réseau local**, avec une communication autorisée entre les appareils. Le PC peut être en Ethernet et le mobile en Wi-Fi, à condition de rejoindre le même réseau domestique. Une connexion mobile 4G/5G seule ne suffit pas. Le Wi-Fi invité, l’isolation des appareils ou certains VPN peuvent empêcher cette communication.
+- Dans ce projet, le serveur Python tourne sur le Mac : c’est lui qui doit joindre directement le Player. Si un mobile sert d’interface locale, connectez-le au même réseau Wi-Fi que la Freebox. **Aucune application mobile ni interface Web n’est fournie** ; une interface compatible supplémentaire serait nécessaire pour cet usage.
 - Le Player allumé pour le premier test, avec la TV visible pour confirmer le résultat.
 - Une adresse locale du Player accessible sur le port HTTP 80.
 - Le **code de télécommande réseau** du Player. Il ne s’agit pas du code parental, du mot de passe Wi-Fi ou du mot de passe Freebox OS.
@@ -167,6 +168,26 @@ La configuration locale existante dans le dossier parent `TEMP` continue de poin
 | `press_key` | `key`, `long_press=False` | Envoie une touche autorisée, avec appui long optionnel. |
 | `change_channel` | `channel` de 1 à 9999 | Saisit les chiffres du numéro ; nécessite le contexte TV. |
 | `adjust_volume` | `direction`: `up`/`down`, `steps`: 1 à 10 | Envoie des pressions successives sur le volume. |
+
+### Commandes disponibles par fonction
+
+| Fonction | Outil / touches | Exemples d’utilisation |
+|---|---|---|
+| Vérifier la connexion | `connection_status()` | Vérifier que le service du Player répond sans toucher à la TV. |
+| Monter / baisser le son | `adjust_volume(direction="up" ou "down", steps=1…10)` | Augmenter de 3 crans, diminuer de 5 crans. |
+| Couper / rétablir le son | `press_key(key="mute")` | Basculer le mode muet. |
+| Basculer marche / veille | `press_key(key="power")` | Envoyer le bouton d’alimentation au Player. |
+| Choisir une chaîne | `change_channel(channel=2)` | Saisir un numéro de chaîne en télévision en direct. |
+| Chaîne suivante / précédente | `press_key` : `prgm_inc`, `prgm_dec` | Zapper dans les chaînes. |
+| Accueil et retour | `press_key` : `home`, `back` | Revenir à l’accueil ou à l’écran précédent. |
+| Naviguer et valider | `press_key` : `up`, `down`, `left`, `right`, `ok` | Parcourir un menu et valider un choix. |
+| Lecture multimédia | `press_key` : `play`, `pause`, `stop`, `fwd`, `bwd`, `next`, `prev` | Commander la lecture selon l’application ouverte. |
+| Enregistrement | `press_key(key="rec")` | Envoyer la touche d’enregistrement si le contexte le permet. |
+| Informations / guide / TV | `press_key` : `info`, `epg`, `tv` | Envoyer la touche correspondante si le firmware la reconnaît. |
+| Touches de couleur | `press_key` : `red`, `green`, `yellow`, `blue` | Utiliser les raccourcis du menu courant. |
+| Chiffres et appui long | `press_key` : `0`…`9`, `long_press=True` en option | Saisir un chiffre ou maintenir une touche. |
+
+Il s’agit des commandes exposées par le code, pas d’une garantie que chaque touche sera reconnue dans chaque application. Le volume a été confirmé sur le matériel ; les autres fonctions restent à vérifier sur votre Player.
 
 Touches déclarées : `power`, `home`, `back`, `up`, `down`, `left`, `right`, `ok`, `vol_inc`, `vol_dec`, `mute`, `prgm_inc`, `prgm_dec`, `red`, `green`, `yellow`, `blue`, `play`, `pause`, `stop`, `rec`, `fwd`, `bwd`, `next`, `prev`, `info`, `epg`, `tv`, et les chiffres `0` à `9`. Leur effet dépend du contexte et du firmware ; toutes n’ont pas été testées physiquement.
 
