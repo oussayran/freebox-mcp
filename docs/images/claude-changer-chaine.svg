@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+<title id="title">Demander à Claude Code de changer de chaîne</title>
+<desc id="desc">Exemple illustratif : l’utilisateur demande de passer à la chaîne 2. Claude appelle change_channel avec channel égal à 2. Le résultat indique seulement que la commande a été acceptée.</desc>
+<rect width="1200" height="680" rx="24" fill="#f4f2ed"/>
+<g font-family="Arial, Helvetica, sans-serif">
+<text x="64" y="67" fill="#1e293b" font-size="30" font-weight="700">Changer de chaîne avec Claude Code</text>
+<text x="64" y="103" fill="#475569" font-size="18">Freebox MCP · Exemple illustratif</text>
+<rect x="64" y="132" width="1072" height="412" rx="18" fill="#ffffff" stroke="#d8dce1"/>
+<path d="M82 132H1118Q1136 132 1136 150V184H64V150Q64 132 82 132" fill="#202b3b"/>
+<circle cx="89" cy="158" r="5" fill="#e6a08c"/><circle cx="108" cy="158" r="5" fill="#e6c88c"/><circle cx="127" cy="158" r="5" fill="#98c7b4"/>
+<text x="158" y="164" font-size="16" fill="#ffffff">Claude Code — serveur freebox connecté</text>
+<rect x="88" y="208" width="1024" height="97" rx="12" fill="#eef2f6"/>
+<text x="110" y="239" font-size="15" font-weight="700" fill="#475569">VOUS</text>
+<text x="110" y="276" font-size="25" fill="#182536">Utilise Freebox pour passer à la chaîne 2.</text>
+<text x="110" y="346" font-size="15" font-weight="700" fill="#a04b33">CLAUDE · APPEL D’OUTIL</text>
+<rect x="88" y="365" width="1024" height="61" rx="10" fill="#202b3b"/>
+<text x="110" y="403" font-family="Menlo, Consolas, monospace" font-size="23" fill="#f8fafc">change_channel({ "channel": 2 })</text>
+<text x="110" y="466" font-size="16" font-weight="700" fill="#386b57">EXEMPLE DE RÉSULTAT</text>
+<text x="110" y="501" font-size="21" fill="#182536">Commande acceptée. Vérifiez la chaîne sur votre installation.</text>
+<text x="64" y="586" font-size="18" fill="#334155">1. Lancez Claude Code dans le projet et vérifiez /mcp.</text>
+<text x="64" y="617" font-size="18" fill="#334155">2. Restez en mode direct, envoyez votre demande et autorisez l’outil si nécessaire.</text>
+<text x="64" y="651" font-size="15" fill="#64748b">Même réseau local requis · Le serveur ne lit pas la chaîne courante · Aucune capture réelle</text>
+</g></svg>

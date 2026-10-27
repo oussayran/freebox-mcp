@@ -91,6 +91,14 @@ Autorisez le serveur si demandé, puis vérifiez son état avec `/mcp`.
 
 Exemples : « Baisse le volume de 2 crans », « Appuie sur Home », « Passe à la chaîne 2 ».
 
+### Exemple : demander un changement de chaîne
+
+![Exemple illustratif dans Claude Code : demander de passer à la chaîne 2, puis appel de l’outil change_channel.](docs/images/claude-changer-chaine.png)
+
+Après avoir vérifié `/mcp`, écrivez : **« Utilise Freebox pour passer à la chaîne 2. »** Le Player doit déjà être en mode direct. Autorisez l’outil si demandé, puis vérifiez le résultat sur votre installation.
+
+*Illustration explicative, et non capture d’une session réelle. Une commande acceptée ne confirme pas la chaîne affichée ; voir les limites pour les numéros à plusieurs chiffres.*
+
 Un agent ayant accès à votre ordinateur et au réseau local peut également appeler les scripts depuis une conversation. Le clonage du dépôt ne donne pas, à lui seul, cet accès à un service dans le cloud.
 
 ## Piloter avec OpenAI
