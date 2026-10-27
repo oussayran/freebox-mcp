@@ -4,6 +4,27 @@ Contrôlez un **Freebox Révolution Player** depuis un client MCP, avec des comm
 
 Le serveur Python fonctionne sur votre ordinateur et communique avec le Player sur le réseau local. Claude Code est un client possible ; les scripts de test fonctionnent aussi sans lui.
 
+## Architecture
+
+```mermaid
+flowchart TD
+    U[Commande écrite ou dictée] --> C[Client local : Claude Code ou Codex]
+    C <-->|MCP stdio| S[server.py sur votre ordinateur]
+    E[Configuration privée .env] --> S
+    S -->|HTTP sur le réseau local| F[Freebox Révolution Player]
+    F --> R[Action sur le Player]
+```
+
+Le client interprète la demande et choisit un outil ; `server.py` valide les paramètres et envoie la commande au Player. Le code de télécommande reste dans la configuration locale. Le serveur n’intègre aucun modèle d’IA ni reconnaissance vocale.
+
+| Mode | Ce qu’il faut |
+|---|---|
+| Claude | Claude Code installé et connexion MCP configurée ci-dessous. |
+| OpenAI | Codex local configuré en MCP, ou une application API à développer. |
+| Voix | Dictée du système vers un client local, ou application vocale à développer. |
+
+L’ordinateur doit rester allumé et connecté au même réseau local que la Freebox. Le client peut utiliser Internet pour interroger son modèle, mais l’envoi des commandes au Player reste local.
+
 ## Conditions
 
 - Un **Freebox Révolution Player** allumé.
@@ -72,6 +93,50 @@ Exemples : « Baisse le volume de 2 crans », « Appuie sur Home », « Passe à
 
 Un agent ayant accès à votre ordinateur et au réseau local peut également appeler les scripts depuis une conversation. Le clonage du dépôt ne donne pas, à lui seul, cet accès à un service dans le cloud.
 
+## Piloter avec OpenAI
+
+### Avec Codex sur l’ordinateur
+
+Après installation et authentification de Codex, depuis le dossier du dépôt :
+
+```bash
+codex mcp add freebox -- "$PWD/.venv/bin/python" "$PWD/server.py"
+codex mcp list
+codex
+```
+
+Dans Codex, vérifiez les outils avec `/mcp`, puis demandez par exemple : **« Utilise Freebox pour baisser le volume de deux crans. »** Autorisez les actions et l’accès au réseau local si le client les demande.
+
+Cela configure le serveur MCP local ; il ne suffit pas d’ouvrir une conversation ChatGPT dans un navigateur. Cette configuration Codex est documentée ici, mais n’a pas été testée comme intégration MCP directe dans ce projet. Les essais de cette conversation ont utilisé un agent avec accès au Terminal local.
+
+### Avec l’API OpenAI dans votre application
+
+Une application locale peut utiliser le **function calling** : elle décrit les quatre outils au modèle, reçoit une demande d’appel, valide les arguments, puis appelle le serveur MCP local. Elle renvoie ensuite le résultat au modèle pour formuler la réponse.
+
+Cette passerelle n’est pas fournie dans le dépôt. Elle nécessite une clé API, une facturation API et du développement. Gardez la clé API et le code Freebox dans l’application locale ; seul le nom de l’outil et ses arguments doivent servir à décider l’action. N’exposez pas le port HTTP du Player sur Internet pour donner accès au modèle.
+
+## Piloter par commande vocale
+
+### Méthode simple : dicter dans le client
+
+1. Configurez Claude Code ou Codex comme indiqué ci-dessus.
+2. Activez la **dictée vocale de votre système** et autorisez le microphone.
+3. Placez le curseur dans le champ de saisie du client.
+4. Dictez **« Baisse le volume de la Freebox de deux crans »**.
+5. Vérifiez le texte transcrit, envoyez-le et autorisez l’outil si nécessaire.
+
+La voix est convertie en texte ; le client exécute ensuite la même commande MCP qu’avec une saisie au clavier. Le raccourci de dictée dépend de votre système. Ce dépôt ne fournit ni écoute permanente ni mot d’activation.
+
+### Application vocale dédiée : à développer
+
+```text
+Microphone → transcription → modèle avec outils
+          → client MCP local → Freebox Player
+          → résultat → réponse audio facultative
+```
+
+Une intégration OpenAI peut utiliser une chaîne transcription/modèle/synthèse ou une architecture Realtime avec appels d’outils. Dans les deux cas, une application doit relier les appels au serveur MCP local. Aucun assistant vocal autonome n’est livré ici. Les permissions microphone, la gestion de l’audio et les éventuels coûts API dépendent de l’intégration choisie.
+
 ## Outils disponibles
 
 | Outil | Utilisation |
@@ -133,3 +198,10 @@ Chaque utilisateur doit créer son propre `.env` avec les informations de sa Fre
 - `requirements.lock.txt` : versions exactes de l’environnement testé.
 - `requirements.txt` : dépendances directes.
 - `.env.example` et `.mcp.json.example` : modèles de configuration.
+
+## Références
+
+- [Claude Code : connexion MCP](https://code.claude.com/docs/en/mcp)
+- [OpenAI : configurer MCP dans Codex](https://learn.chatgpt.com/docs/extend/mcp)
+- [OpenAI : function calling](https://platform.openai.com/docs/guides/function-calling)
+- [OpenAI : agents vocaux](https://platform.openai.com/docs/guides/voice-agents)
