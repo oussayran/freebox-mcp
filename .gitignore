@@ -1,0 +1,24 @@
+# Secrets and machine-specific MCP configuration
+.env
+.env.*
+!.env.example
+.mcp.json
+
+# Python and local tooling
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Editor / OS files
+.DS_Store
+.idea/
+.vscode/
+*.log

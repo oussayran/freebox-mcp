@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "freebox": {
+      "type": "stdio",
+      "command": "/ABSOLUTE/PATH/freebox-mcp/.venv/bin/python",
+      "args": ["/ABSOLUTE/PATH/freebox-mcp/server.py"]
+    }
+  }
+}
