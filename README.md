@@ -1,146 +1,64 @@
-# Freebox Révolution MCP
+# Freebox MCP
 
-Un serveur MCP local en Python pour piloter un **Freebox Révolution Player** : volume, touches de télécommande et saisie d’un numéro de chaîne. Il fonctionne sur le Mac et envoie des requêtes HTTP au Player sur le réseau local.
+Contrôlez un **Freebox Révolution Player** depuis un client MCP, avec des commandes comme « baisse le volume » ou « passe à la chaîne 2 ».
 
-Le serveur utilise **FastMCP avec le transport stdio**. Aucun logiciel n’est installé sur la Freebox. Un client MCP lance le processus Python et appelle ses outils.
+Le serveur Python fonctionne sur votre ordinateur et communique avec le Player sur le réseau local. Claude Code est un client possible ; les scripts de test fonctionnent aussi sans lui.
 
-```text
-Client MCP → serveur Python sur le Mac → réseau local HTTP → Freebox Player → TV
-```
+## Conditions
 
-## État du projet
+- Un **Freebox Révolution Player** allumé.
+- **L’ordinateur qui exécute le serveur et la Freebox doivent être sur le même réseau local**, en Wi-Fi ou Ethernet, et pouvoir communiquer.
+- Si vous utilisez un mobile comme interface, connectez-le au même réseau domestique. Une connexion 4G/5G seule ne suffit pas. Ce dépôt ne fournit pas d’application mobile.
+- L’adresse IP locale du Player et son **code de télécommande réseau**, disponible dans ses réglages. Ce code est différent du PIN parental et du mot de passe Freebox OS.
+- Python **3.10 ou supérieur**, Git et Internet pour installer les dépendances.
 
-Le 27 octobre 2026, sur une installation macOS avec Python 3.14 :
+Testé sur macOS avec Python 3.14 et un Player Révolution. Les autres modèles Freebox et systèmes restent à vérifier.
 
-- les quatre tests unitaires ont réussi ;
-- la découverte des quatre outils via un vrai client MCP a réussi ;
-- Claude Code a reconnu le serveur avec l’état « Connected » ;
-- les commandes de baisse et de hausse du volume ont été acceptées par le Player, et leur effet a été confirmé visuellement par l’utilisateur sur sa TV.
-
-Les autres touches, la sélection des chaînes et les autres systèmes d’exploitation n’ont pas fait l’objet d’une validation sur matériel dans cette installation. Ce projet indépendant n’est ni un produit officiel Free ni une intégration certifiée.
-
-## 1. Conditions nécessaires
-
-### Matériel et réseau
-
-- Un **Freebox Révolution Player**, le boîtier relié à la TV. Le Freebox Server est un autre appareil.
-- **Le PC/Mac ou le mobile qui envoie les commandes et la Freebox doivent être sur le même réseau local**, avec une communication autorisée entre les appareils. Le PC peut être en Ethernet et le mobile en Wi-Fi, à condition de rejoindre le même réseau domestique. Une connexion mobile 4G/5G seule ne suffit pas. Le Wi-Fi invité, l’isolation des appareils ou certains VPN peuvent empêcher cette communication.
-- Dans ce projet, le serveur Python tourne sur le Mac : c’est lui qui doit joindre directement le Player. Si un mobile sert d’interface locale, connectez-le au même réseau Wi-Fi que la Freebox. **Aucune application mobile ni interface Web n’est fournie** ; une interface compatible supplémentaire serait nécessaire pour cet usage.
-- Le Player allumé pour le premier test, avec la TV visible pour confirmer le résultat.
-- Une adresse locale du Player accessible sur le port HTTP 80.
-- Le **code de télécommande réseau** du Player. Il ne s’agit pas du code parental, du mot de passe Wi-Fi ou du mot de passe Freebox OS.
-
-Cette implémentation cible le Player Révolution. La compatibilité avec Pop, Android TV, Delta/Devialet ou d’autres modèles n’est pas garantie.
-
-### Logiciels
-
-- Python **3.10 minimum** selon les dépendances ; environnement effectivement testé : **3.14**.
-- Git pour cloner et versionner le projet.
-- Accès Internet lors de l’installation des dépendances. Le pilotage lui-même passe par le réseau local.
-- Un client MCP acceptant le transport stdio pour l’usage conversationnel. Claude Code est facultatif : les scripts de test fonctionnent sans lui et sans compte de modèle.
-
-Les bibliothèques peuvent imposer des contraintes supplémentaires selon la version de Python ou le système. `requirements.lock.txt` conserve les versions exactes de l’environnement testé ; leur installation sur d’autres plateformes reste à vérifier.
-
-## 2. Installation après clonage
-
-Dans Terminal, remplacez `VOTRE_COMPTE` par le nom du compte GitHub qui hébergera le dépôt :
+## Installation
 
 ```bash
-git clone https://github.com/VOTRE_COMPTE/freebox-mcp.git
+git clone https://github.com/oussayran/freebox-mcp.git
 cd freebox-mcp
-python3 --version
 python3 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -r requirements.lock.txt
-```
-
-Si `python3` est trop ancien, utilisez le chemin d’un interpréteur Python 3.10 ou supérieur pour créer l’environnement. Sur le Mac déjà configuré, l’environnement `.venv` existe : inutile de le recréer.
-
-Alternative avec `uv`, s’il est déjà installé :
-
-```bash
-uv venv --python 3.14
-uv pip sync --python .venv/bin/python requirements.lock.txt
-```
-
-`requirements.txt` liste les trois dépendances directes. Le fichier `requirements.lock.txt` fixe aussi leurs dépendances transitives pour reproduire l’environnement testé. Ce dernier est un relevé de versions, sans hachages de validation des distributions.
-
-## 3. Configuration privée
-
-Pour une nouvelle installation seulement :
-
-```bash
 cp .env.example .env
 chmod 600 .env
 nano .env
 ```
 
-Ne recopiez pas le modèle sur un `.env` déjà configuré : cela remplacerait ses valeurs.
-
-Renseignez :
+Dans `.env`, remplacez les valeurs par celles de votre Player :
 
 ```dotenv
 FREEBOX_PLAYER_HOST=192.168.1.100
 FREEBOX_REMOTE_CODE=VOTRE_CODE_NUMERIQUE
 ```
 
-L’adresse ci-dessus est un exemple. Remplacez-la par celle de votre Player, sans `http://`, sans port et sans chemin.
+L’adresse IP est un exemple. Utilisez l’adresse du **Player**, pas celle du routeur. Ne recopiez pas `.env.example` sur un fichier déjà configuré.
 
-Pour le code, cherchez **Code télécommande réseau** dans les réglages/informations du Freebox Player affichés sur la TV. Le nom exact du menu peut varier selon le firmware. Enregistrez dans nano avec **Ctrl+O**, Entrée, puis quittez avec **Ctrl+X**.
+Dans nano : **Ctrl+O**, Entrée pour enregistrer, puis **Ctrl+X** pour quitter. Dans Finder, **Commande+Maj+point** affiche les fichiers cachés comme `.env`.
 
-Le fichier `.env` est masqué dans Finder : **Commande+Maj+point** affiche les fichiers cachés.
+Le fichier est relu à chaque commande : inutile de redémarrer après une modification du code. Les variables d’environnement ont priorité sur `.env`.
 
-### Trouver l’adresse du bon boîtier
+## Tester
 
-Consultez l’adresse IP dans les informations réseau du Player ou dans la liste des appareils de votre routeur. Le nom `freebox-player.local` peut fonctionner selon votre réseau. Une réservation DHCP peut stabiliser l’adresse IP.
-
-Ne supposez pas que `hd1.freebox.fr` désigne votre Player : dans l’environnement testé, ce nom renvoyait une adresse publique. Le serveur vérifie que le nom configuré se résout vers des adresses privées avant l’envoi. L’utilisation d’une adresse IPv4 locale explicite est la méthode la plus simple ; la syntaxe IPv6 n’est pas prise en charge par le validateur de configuration actuel.
-
-Les variables d’environnement du processus, si elles existent, ont priorité sur `.env`. Le fichier est lu à chaque appel : changer son code ne nécessite pas de redémarrer le serveur. Il est lu relativement à `server.py`, et non au dossier courant du Terminal.
-
-## 4. Tester sans Claude Code
-
-Toutes les commandes ci-dessous se lancent depuis la racine de ce dépôt.
-
-### Tests unitaires : aucune action sur la TV
+Depuis le dossier du dépôt :
 
 ```bash
+# Tests unitaires : aucune commande envoyée au Player
 .venv/bin/python -m unittest discover -s . -p 'test_freebox.py' -v
-```
 
-Les quatre tests vérifient le refus des touches inconnues, le refus d’un code absent, l’absence du code dans le message d’erreur HTTP et la construction d’une touche avec appui long. Ils simulent le réseau : leur succès ne prouve pas la connexion au Player.
-
-### Vérifier le protocole MCP et la réponse réseau
-
-```bash
+# Vérification du serveur MCP et de la réponse réseau
 .venv/bin/python check_mcp.py
-```
 
-Le script démarre le serveur en stdio, découvre ses outils et appelle `connection_status`. Les outils attendus sont `connection_status`, `press_key`, `change_channel` et `adjust_volume`.
-
-Cette sonde envoie une requête **sans touche et sans code**. Un HTTP 403 peut donc être attendu. Elle ne valide jamais le code : `remote_code_verified` reste `False`, même après une configuration correcte. `service_responded` signifie uniquement qu’une réponse HTTP a été reçue.
-
-### Test réel du volume
-
-Avec le Player allumé et un volume permettant de voir une variation :
-
-```bash
+# Test réel : baisse le volume d’un cran, puis le remonte
 .venv/bin/python test_live.py
 ```
 
-Le script envoie **volume −1**, attend brièvement, puis envoie **volume +1**. Deux résultats contenant `accepted: True` indiquent que les deux requêtes ont été acceptées. Confirmez l’effet sur la TV.
+La sonde `check_mcp.py` n’envoie aucun code : **HTTP 403 peut être normal** et ne valide pas votre code. Le test réel doit renvoyer deux résultats avec `accepted: True` ; vérifiez aussi l’effet sur votre installation. Si une étape échoue, le script s’arrête.
 
-Si le premier appel échoue, le script s’arrête. Si la baisse réussit mais que la hausse échoue, le volume peut rester un cran plus bas. Aux limites de volume, la séquence ne garantit pas le retour au même niveau.
+## Utiliser avec Claude Code
 
-### Depuis une conversation avec un agent
-
-Un agent disposant d’un accès autorisé au Terminal de ce Mac et au réseau local peut exécuter ces scripts depuis le dépôt. C’est ainsi que le test a été réalisé dans la conversation de préparation.
-
-Cloner le dépôt ne donne pas automatiquement à une conversation hébergée dans le cloud un accès à votre réseau domestique. Il faut soit un client MCP local, soit un agent avec accès explicite à la machine. Aucun compte ChatGPT ou Claude particulier n’est nécessaire pour les scripts Python eux-mêmes.
-
-## 5. Raccordement facultatif à Claude Code
-
-Depuis le dossier du dépôt, avec Claude Code déjà installé :
+Avec Claude Code déjà installé, depuis le dossier du dépôt :
 
 ```bash
 claude mcp add --transport stdio --scope project freebox -- "$PWD/.venv/bin/python" "$PWD/server.py"
@@ -148,130 +66,70 @@ claude mcp get freebox
 claude
 ```
 
-Approuvez la configuration du serveur du projet si Claude Code le demande. Dans une nouvelle session, `/mcp` permet de vérifier sa disponibilité. Les chemins sont absolus pour que le lancement ne dépende pas du dossier courant.
+Autorisez le serveur si demandé, puis vérifiez son état avec `/mcp`.
 
-Alternative manuelle : copiez `.mcp.json.example` vers `.mcp.json`, puis remplacez les deux chemins d’exemple par les chemins absolus de votre clone. Ce fichier local est exclu de Git ; seul son modèle est partageable. Ne mettez pas le code de télécommande dans le JSON.
+Exemples : « Baisse le volume de 2 crans », « Appuie sur Home », « Passe à la chaîne 2 ».
 
-Exemples de demandes :
+Un agent ayant accès à votre ordinateur et au réseau local peut également appeler les scripts depuis une conversation. Le clonage du dépôt ne donne pas, à lui seul, cet accès à un service dans le cloud.
 
-- « Baisse le volume de la Freebox d’un cran. »
-- « Appuie sur Home sur la Freebox. »
-- « Passe sur la chaîne 2. » (le Player doit déjà être en télévision en direct)
+## Outils disponibles
 
-La configuration locale existante dans le dossier parent `TEMP` continue de pointer vers ce serveur. Le dépôt contient son propre exemple pour les futures installations.
-
-## 6. Outils et limites
-
-| Outil | Paramètres | Effet |
-|---|---|---|
-| `connection_status` | aucun | Sonde HTTP sans action sur la TV ; ne valide pas le code. |
-| `press_key` | `key`, `long_press=False` | Envoie une touche autorisée, avec appui long optionnel. |
-| `change_channel` | `channel` de 1 à 9999 | Saisit les chiffres du numéro ; nécessite le contexte TV. |
-| `adjust_volume` | `direction`: `up`/`down`, `steps`: 1 à 10 | Envoie des pressions successives sur le volume. |
-
-### Commandes disponibles par fonction
-
-| Fonction | Outil / touches | Exemples d’utilisation |
-|---|---|---|
-| Vérifier la connexion | `connection_status()` | Vérifier que le service du Player répond sans toucher à la TV. |
-| Monter / baisser le son | `adjust_volume(direction="up" ou "down", steps=1…10)` | Augmenter de 3 crans, diminuer de 5 crans. |
-| Couper / rétablir le son | `press_key(key="mute")` | Basculer le mode muet. |
-| Basculer marche / veille | `press_key(key="power")` | Envoyer le bouton d’alimentation au Player. |
-| Choisir une chaîne | `change_channel(channel=2)` | Saisir un numéro de chaîne en télévision en direct. |
-| Chaîne suivante / précédente | `press_key` : `prgm_inc`, `prgm_dec` | Zapper dans les chaînes. |
-| Accueil et retour | `press_key` : `home`, `back` | Revenir à l’accueil ou à l’écran précédent. |
-| Naviguer et valider | `press_key` : `up`, `down`, `left`, `right`, `ok` | Parcourir un menu et valider un choix. |
-| Lecture multimédia | `press_key` : `play`, `pause`, `stop`, `fwd`, `bwd`, `next`, `prev` | Commander la lecture selon l’application ouverte. |
-| Enregistrement | `press_key(key="rec")` | Envoyer la touche d’enregistrement si le contexte le permet. |
-| Informations / guide / TV | `press_key` : `info`, `epg`, `tv` | Envoyer la touche correspondante si le firmware la reconnaît. |
-| Touches de couleur | `press_key` : `red`, `green`, `yellow`, `blue` | Utiliser les raccourcis du menu courant. |
-| Chiffres et appui long | `press_key` : `0`…`9`, `long_press=True` en option | Saisir un chiffre ou maintenir une touche. |
-
-Il s’agit des commandes exposées par le code, pas d’une garantie que chaque touche sera reconnue dans chaque application. Le volume a été confirmé sur le matériel ; les autres fonctions restent à vérifier sur votre Player.
-
-Touches déclarées : `power`, `home`, `back`, `up`, `down`, `left`, `right`, `ok`, `vol_inc`, `vol_dec`, `mute`, `prgm_inc`, `prgm_dec`, `red`, `green`, `yellow`, `blue`, `play`, `pause`, `stop`, `rec`, `fwd`, `bwd`, `next`, `prev`, `info`, `epg`, `tv`, et les chiffres `0` à `9`. Leur effet dépend du contexte et du firmware ; toutes n’ont pas été testées physiquement.
-
-**Pas de lecture de l’état réel.** HTTP 200 indique l’acceptation d’une requête, pas une confirmation de la chaîne, du niveau sonore ou de l’alimentation. Aucun réglage absolu à « 50 % » ou « 100 % » n’est fourni. Une pression n’est pas une mesure garantie de pourcentage. Un volume HDMI, celui du téléviseur ou d’un amplificateur peut être indépendant.
-
-`power` et `mute` sont des bascules. Ne les relancez pas automatiquement après une réponse incertaine. L’effet sur l’alimentation de la TV dépend notamment de sa configuration HDMI-CEC. Aucune automatisation horaire, ouverture fiable d’applications, API Freebox OS ou commande du routeur n’est implémentée.
-
-## 7. Dépannage
-
-| Symptôme | Vérification |
+| Outil | Utilisation |
 |---|---|
-| HTTP 403 lors du test réel | Vérifier le code réseau du Player et l’adresse du boîtier ; ne pas utiliser le PIN parental. |
-| HTTP 403 dans `check_mcp.py` uniquement | Possible pour la sonde anonyme ; lancer le test réel pour valider le code. |
-| `Cannot reach Freebox Player` | Player allumé, bonne IP, même réseau, port 80 accessible, VPN/isolation réseau et permissions de l’agent. |
-| `Cannot resolve` | Essayer l’IPv4 locale connue plutôt qu’un nom mDNS. |
-| `must resolve to a private` | Le nom renvoie une adresse publique ; utiliser l’adresse privée du Player. |
-| `Set FREEBOX_REMOTE_CODE` | Vérifier `.env`, sa valeur numérique et d’éventuelles variables d’environnement prioritaires. |
-| MCP connecté, mais aucune action | La connexion MCP seule ne valide ni le code ni l’effet sur la TV. |
-| `ModuleNotFoundError` | Utiliser `.venv/bin/python` et installer les dépendances dans cet environnement. |
+| `connection_status()` | Vérifie la réponse réseau sans appuyer sur une touche. Ne valide pas le code. |
+| `press_key(key, long_press=False)` | Envoie une touche de télécommande, avec appui long optionnel. |
+| `change_channel(channel)` | Saisit un numéro de chaîne de 1 à 9999, depuis le mode direct. |
+| `adjust_volume(direction, steps=1)` | Monte (`up`) ou baisse (`down`) le volume de 1 à 10 crans. |
 
-## 8. Confidentialité et conditions d’utilisation
+Touches acceptées par `press_key` :
 
-N’utilisez ce serveur que pour un appareil que vous êtes autorisé à contrôler. Il est prévu pour un réseau local de confiance. Le code est envoyé à l’API du Player par HTTP sans chiffrement : ne redirigez pas ce service vers Internet.
+| Fonction | Touches |
+|---|---|
+| Marche/veille et muet | `power`, `mute` |
+| Volume et chaînes | `vol_inc`, `vol_dec`, `prgm_inc`, `prgm_dec` |
+| Menus | `home`, `back`, `up`, `down`, `left`, `right`, `ok` |
+| Lecture | `play`, `pause`, `stop`, `fwd`, `bwd`, `next`, `prev` |
+| Autres | `rec`, `info`, `epg`, `tv`, `red`, `green`, `yellow`, `blue` |
+| Chiffres | `0` à `9` |
 
-`.env`, les environnements Python, caches, journaux et la configuration MCP propre à la machine sont exclus de Git. Seul `.env.example`, vide de secret, doit être publié. Évitez les captures d’écran ou journaux contenant une URL de commande complète, car elle peut contenir le code. Les exclusions Git ne suppriment pas un secret déjà présent dans un ancien commit.
+## Limites et dépannage
 
-Aucune licence de réutilisation du code n’a été choisie pour ce dépôt. Avant d’encourager la redistribution ou les contributions publiques, choisissez une licence adaptée et ajoutez un fichier `LICENSE`. Les dépendances conservent leurs propres licences.
+- **Volume confirmé sur matériel**, avec quatre tests unitaires réussis. Les autres touches dépendent du contexte et ne sont pas toutes validées.
+- **Chaînes à plusieurs chiffres : problème constaté.** Une demande de canal 646 a sélectionné le canal 6. La saisie multi-chiffres reste à corriger ou à valider ; une réponse HTTP positive ne garantit pas la bonne chaîne.
+- **Pas de retour d’état** : ni niveau exact du volume, ni chaîne courante, ni état marche/veille. Un réglage garanti à 50 % ou 100 % n’est pas disponible.
+- `power` et `mute` sont des bascules : évitez de les répéter automatiquement après un résultat incertain.
+- **403 lors du test réel** : vérifiez le code réseau et l’adresse du Player.
+- **Connexion impossible** : vérifiez que le Player est allumé, sur le même réseau, sans isolation Wi-Fi ni VPN bloquant.
+- **Adresse publique refusée** : utilisez l’IP privée du Player. `hd1.freebox.fr` ne désigne pas toujours l’appareil local. Le validateur actuel attend un nom ou une adresse IPv4, sans port ni chemin.
 
-## 9. Publier plus tard sur GitHub
+## Confidentialité et partage
 
-Le dépôt local est prêt sur la branche `main`. Aucune publication n’est réalisée par ces instructions tant que vous n’exécutez pas les commandes d’envoi.
+Le fichier **`.env` est exclu de Git**, avec l’environnement Python, les caches et la configuration MCP locale. Ne publiez jamais votre code de télécommande. Seuls les modèles `.env.example` et `.mcp.json.example` sont partageables.
 
-### Vérifier ce qui sera partagé
+Le contrôle utilise HTTP non chiffré sur un réseau local de confiance. Ne l’exposez pas sur Internet et utilisez uniquement des appareils que vous êtes autorisé à contrôler.
+
+Aucune licence de réutilisation n’a encore été choisie. Une licence devra être ajoutée pour préciser les droits de redistribution et de modification.
+
+## Mettre à jour le dépôt GitHub
+
+Avant chaque envoi, vérifiez les fichiers suivis : `.env` ne doit pas apparaître.
 
 ```bash
 git status --short
 git ls-files
-git check-ignore .env .venv .cache .DS_Store .mcp.json
+git add README.md  # adaptez aux fichiers modifiés
+git commit -m "Mettre à jour la documentation"
+git push origin main
 ```
 
-L’absence de `.env` dans `git ls-files` est essentielle. Le fichier `.env.example`, lui, doit être présent. Vérifiez aussi votre identité Git avant de publier : le nom et l’adresse d’auteur des commits deviennent visibles avec le dépôt.
+Chaque utilisateur doit créer son propre `.env` avec les informations de sa Freebox.
 
-### Créer et envoyer le dépôt
+## Fichiers
 
-Sur GitHub, créez un dépôt vide nommé par exemple `freebox-mcp`, public ou privé selon votre choix. Ne l’initialisez pas avec un README, une licence ou un `.gitignore`, puisque ces fichiers sont préparés localement. Une authentification GitHub valide en HTTPS ou SSH est nécessaire.
-
-Depuis la racine du dépôt, remplacez `VOTRE_COMPTE` :
-
-```bash
-git remote add origin https://github.com/VOTRE_COMPTE/freebox-mcp.git
-git push -u origin main
-```
-
-Si `origin` existe déjà, consultez d’abord `git remote -v` et vérifiez son adresse. Pour les modifications suivantes :
-
-```bash
-git add README.md server.py
-git commit -m "Décrire la modification"
-git push
-```
-
-Adaptez les noms de fichiers aux changements à publier. Ne forcez pas l’ajout du `.env` avec `git add -f`.
-
-### Récupération par une autre personne
-
-La personne clone le dépôt, installe les dépendances, copie `.env.example` vers `.env` et renseigne **l’adresse et le code de sa propre Freebox**. Votre fichier privé et votre environnement virtuel ne sont pas distribués.
-
-## 10. Organisation du dépôt
-
-```text
-server.py                 Serveur et outils MCP
-check_mcp.py              Découverte MCP et sonde sans action
-test_live.py              Test physique du volume
-test_freebox.py           Tests unitaires simulant le réseau
-requirements.txt          Dépendances directes
-requirements.lock.txt     Versions de l’environnement testé
-.env.example              Modèle de configuration sans secret
-.mcp.json.example         Modèle de configuration client
-.gitignore                Exclusions des fichiers locaux
-README.md                 Ce guide
-```
-
-## Documentation de référence
-
-- [Ajouter un dépôt local à GitHub](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github)
-- [Connecter Claude Code à un serveur MCP](https://code.claude.com/docs/en/mcp)
-- [FastMCP](https://gofastmcp.com/)
+- `server.py` : serveur MCP.
+- `test_freebox.py` : tests unitaires.
+- `check_mcp.py` : vérification MCP et réseau.
+- `test_live.py` : test réel du volume.
+- `requirements.lock.txt` : versions exactes de l’environnement testé.
+- `requirements.txt` : dépendances directes.
+- `.env.example` et `.mcp.json.example` : modèles de configuration.
